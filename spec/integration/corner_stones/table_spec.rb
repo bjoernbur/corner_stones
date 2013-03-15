@@ -173,27 +173,27 @@ HTML
               <th>Author</th>
             </tr>
           </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>Clean Code</td>
-                <td>Robert C. Martin</td>
-                <td><a class="delete-action" href="/delete/clean_code">X</a></td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Domain Driven Design</td>
-                <td>Eric Evans</td>
-                <td><a class="delete-action" href="/delete/domain_driven_design">X</a></td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Pro Git</td>
-                <td>Scott Chacon</td>
-              </tr>
-            </tbody>
-          </table>
-    HTML
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Clean Code</td>
+              <td>Robert C. Martin</td>
+              <td><a data-method="delete" href="/delete/clean_code">X</a></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Domain Driven Design</td>
+              <td>Eric Evans</td>
+              <td><a data-method="delete" href="/delete/domain_driven_design">X</a></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Pro Git</td>
+              <td>Scott Chacon</td>
+            </tr>
+          </tbody>
+        </table>
+      HTML
       }
       before do
         subject.extend(CornerStones::Table::DeletableRows)
@@ -224,6 +224,66 @@ HTML
         errors.string.must_equal "[DEPRECATION] `delete_row` is deprecated. Please use `row(row_spec).delete` instead.\n"
       end
 
+      describe 'with custom delete_link-selector' do
+        let(:html) {<<-HTML
+          <table class="articles">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Clean Code</td>
+                <td>Robert C. Martin</td>
+                <td><a class="delete-action" href="/delete/clean_code">X</a></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Domain Driven Design</td>
+                <td>Eric Evans</td>
+                <td><a class="delete-action" href="/delete/domain_driven_design">X</a></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Pro Git</td>
+                <td>Scott Chacon</td>
+              </tr>
+            </tbody>
+          </table>
+        HTML
+        }
+        module CornerStones
+          class Table
+            module CustomDeletableRows
+              def build_row(node)
+                row = super
+                row.extend CustomRowMethods
+                row
+              end
+
+              module CustomRowMethods
+                include DeletableRows::RowMethods
+
+                def delete_link
+                  node.first('td .delete-action')
+                end
+              end
+            end
+          end
+        end
+        before do
+          subject.extend(CornerStones::Table::CustomDeletableRows)
+        end
+
+        it 'allows you to trigger a deletion with a row selector' do
+          subject.row('Title' => 'Domain Driven Design').delete
+          current_path.must_equal '/delete/domain_driven_design'
+        end
+      end
     end
 
     describe 'selectable rows' do
