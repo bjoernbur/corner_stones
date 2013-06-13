@@ -124,15 +124,20 @@ describe CornerStones::Table do
       <table class="articles">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Title</th>
             <th>Author</th>
+            <th>ID</th>
           </tr>
         </thead>
         <tbody>
           <tr>
+            <td>Clean Code</td>
+            <td>Robert C. Martin</td>
             <td>1</td>
-            <td colspan="2">Clean Code</td>
+          </tr>
+          <tr>
+            <td colspan="2">Clean Code Free</td>
+            <td>1</td>
           </tr>
         </tbody>
       </table>
@@ -140,7 +145,10 @@ HTML
     }
 
     it 'ignores empty cells' do
-      expected_data = [{'ID' => '1', 'Title' => 'Clean Code', 'Author' => nil}]
+      expected_data = [
+                       {"Title" => "Clean Code", "Author" => "Robert C. Martin", "ID" => "1"},
+                       {"Title" => "Clean Code Free", "ID" => "1"}
+                      ]
       subject.rows.map {|r|
         r.reject {|key, value| key == 'Row-Element'}
       }.must_equal(expected_data)

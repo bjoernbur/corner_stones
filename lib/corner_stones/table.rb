@@ -26,6 +26,7 @@ module CornerStones
     def rows
       within @scope do
         all('tbody tr').map do |row|
+          @header_index = 0
           attributes_for_row(row)
         end
       end
@@ -51,7 +52,14 @@ module CornerStones
     def augment_row_with_cell(row_data, row, index, header)
       data = row.all(@data_selector)
       cell = data[index]
-      row_data[header] = value_for_cell(cell)
+      unless cell.nil?
+        if @header_index.nil?
+          row_data[header] = cell.text
+        else
+          row_data[headers[@header_index]] = cell.text
+          @header_index += cell[:colspan].nil? ? 1 : cell[:colspan].to_i
+        end
+      end
     end
 
     def value_for_cell(cell)
